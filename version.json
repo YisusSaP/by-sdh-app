@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "date": "2026-09-15",
+  "notes": "Versión inicial — Checklist de Quotes",
+  "files": [
+    {
+      "path": "pages/checklist.html",
+      "url": "https://raw.githubusercontent.com/YisusSaP/by-sdh-app/main/pages/checklist.html"
+    }
+  ]
+}
