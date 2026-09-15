@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Checklist de Quotes — Harmony CPQ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f0f3f8;
+      color: #1a1a2e;
+      min-height: 100vh;
+      padding: 32px 16px 60px;
+    }
+
+    .container { max-width: 760px; margin: 0 auto; }
+
+    /* ── HEADER ──────────────────────────────────────────── */
+    header {
+      background: linear-gradient(135deg, #0a2e5c 0%, #0d3a73 100%);
+      color: #fff;
+      padding: 26px 32px 20px;
+      border-radius: 12px 12px 0 0;
+    }
+    header h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: 0.1px; }
+    header p  { font-size: 0.8rem; color: #a8c0e0; margin-top: 4px; }
+    .progress-wrap { margin-top: 14px; }
+    .progress-bar-bg {
+      background: rgba(255,255,255,0.15); height: 6px;
+      border-radius: 3px; overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%; background: #4fc3f7; border-radius: 3px;
+      transition: width 0.35s ease; width: 0%;
+    }
+    .progress-label { font-size: 0.73rem; color: #a8c0e0; margin-top: 5px; }
+
+    /* ── DEAL MOTION SELECTOR ────────────────────────────── */
+    .motion-selector { background: #0d3a73; padding: 16px 32px 18px; }
+    .motion-label {
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; color: #7aaad8; margin-bottom: 10px;
+    }
+    .motion-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+    .motion-btn {
+      background: rgba(255,255,255,0.08);
+      color: #c8d8f0; border: 1.5px solid rgba(255,255,255,0.15);
+      padding: 7px 18px; border-radius: 20px;
+      font-size: 0.82rem; font-weight: 500;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .motion-btn:hover { background: rgba(255,255,255,0.15); }
+    .motion-btn.active {
+      background: #4fc3f7; color: #0a2e5c;
+      border-color: #4fc3f7; font-weight: 700;
+    }
+
+    /* ── BODY CARD ───────────────────────────────────────── */
+    .body-card {
+      background: #fff;
+      border-radius: 0 0 12px 12px;
+      padding: 24px 32px 36px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+    }
+
+    /* ── INFO STRIP ──────────────────────────────────────── */
+    .info-box {
+      border-radius: 8px; padding: 11px 16px; font-size: 0.82rem;
+    }
+    .info-box-link {
+      background: #f4f8ff; border: 1.5px solid #d0e0f4;
+      color: #0a2e5c; margin-bottom: 10px;
+    }
+    .info-box-link a { color: #0a6cbd; font-weight: 600; text-decoration: none; }
+    .info-box-link a:hover { text-decoration: underline; }
+    .info-box-legend {
+      display: flex; align-items: center; gap: 7px;
+      background: #e8f4fd; border: 1.5px solid #90c8f0;
+      margin-bottom: 22px;
+    }
+    .legend-text { font-size: 0.8rem; color: #0a4a7a; font-weight: 600; }
+
+    /* ── SECTION ─────────────────────────────────────────── */
+    .section { margin-bottom: 26px; }
+    .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .section-title {
+      font-size: 0.68rem; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 1px; color: #0a2e5c; white-space: nowrap;
+    }
+    .section-rule { flex: 1; height: 2px; background: #e8eef7; }
+
+    /* ── CHECK ITEMS ─────────────────────────────────────── */
+    .check-item {
+      display: flex; align-items: flex-start; gap: 11px;
+      padding: 9px 12px; border-radius: 8px;
+      cursor: pointer; user-select: none;
+      transition: background 0.15s; margin-bottom: 2px;
+    }
+    .check-item:hover { background: #f0f5ff; }
+    .check-item.done  { background: #f0fdf4; }
+    .check-item input[type="checkbox"] {
+      width: 17px; height: 17px; accent-color: #0a2e5c;
+      cursor: pointer; margin-top: 2px; flex-shrink: 0;
+    }
+    .check-label {
+      font-size: 0.875rem; line-height: 1.5;
+      cursor: pointer; color: #1a1a2e; transition: color 0.15s; flex: 1;
+    }
+    .check-item.done .check-label { color: #aaa; text-decoration: line-through; }
+
+    /* Tags */
+    .tag {
+      font-size: 0.63rem; font-weight: 700;
+      padding: 2px 7px; border-radius: 10px;
+      margin-left: 5px; vertical-align: middle; white-space: nowrap;
+    }
+    .tag-block { background: #fde8e8; color: #c0392b; }
+    .tag-warn  { background: #fef3e2; color: #c87a00; }
+
+    /* ── INLINE NOTES ────────────────────────────────────── */
+    .note {
+      margin: 4px 0 10px 40px;
+      font-size: 0.79rem; color: #5a6a80; line-height: 1.5;
+      padding: 8px 12px; border-radius: 6px; border-left: 3px solid;
+    }
+    .note-info   { background: #eef5fc; border-color: #4a90c0; }
+    .note-warn   { background: #fff8e8; border-color: #e6a817; }
+    .note-danger { background: #fef0f0; border-color: #e05252; }
+
+    /* ── REFERENCE CARD ──────────────────────────────────── */
+    .ref-card { border: 1.5px solid #d8e4f4; border-radius: 8px; overflow: hidden; margin: 10px 0 14px; }
+    .ref-card-header {
+      background: #eef4fb; padding: 9px 14px;
+      font-size: 0.8rem; font-weight: 600; color: #0a2e5c;
+      cursor: pointer; display: flex; align-items: center; gap: 6px;
+      user-select: none; transition: background 0.15s;
+    }
+    .ref-card-header:hover { background: #e0ecf8; }
+    .ref-card-header .arrow { margin-left: auto; font-size: 0.75rem; transition: transform 0.25s; }
+    .ref-card-header.open .arrow { transform: rotate(180deg); }
+    .ref-card-body { display: none; }
+    .ref-card-body.open { display: block; }
+    .ref-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .ref-table td { padding: 8px 14px; border-bottom: 1px solid #e8eef7; vertical-align: top; }
+    .ref-table tr:last-child td { border-bottom: none; }
+    .ref-table td:first-child { font-weight: 600; color: #0a2e5c; width: 38%; white-space: nowrap; }
+    .ref-table td:last-child { color: #444; }
+
+    /* ── INLINE RADIO BUTTONS ────────────────────────────── */
+    .inline-question {
+      background: #f4f8ff; border: 1.5px solid #c8d8f0;
+      border-radius: 10px; padding: 13px 16px; margin: 12px 0 4px;
+    }
+    .inline-question-label {
+      font-size: 0.85rem; font-weight: 600; color: #0a2e5c; margin-bottom: 10px;
+    }
+    .radio-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .radio-btn {
+      padding: 6px 18px; border-radius: 16px;
+      border: 1.5px solid #c8d8f0; background: #fff;
+      color: #0a2e5c; font-size: 0.82rem; font-weight: 500;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .radio-btn:hover { background: #e8f0fb; }
+    .radio-btn.active { background: #4fc3f7; color: #0a2e5c; border-color: #4fc3f7; font-weight: 700; }
+
+    /* ── CONDITIONAL SECTIONS ────────────────────────────── */
+    .cond-section {
+      overflow: hidden; max-height: 0; opacity: 0;
+      transition: max-height 0.45s ease, opacity 0.3s ease;
+    }
+    .cond-section.visible { max-height: 2400px; opacity: 1; }
+
+    .sub-section {
+      overflow: hidden; max-height: 0; opacity: 0;
+      transition: max-height 0.35s ease, opacity 0.25s ease;
+    }
+    .sub-section.visible { max-height: 800px; opacity: 1; margin-top: 10px; }
+
+    /* Placeholder when no deal motion selected */
+    .no-motion-msg {
+      text-align: center; padding: 28px 20px;
+      color: #8899bb; font-size: 0.88rem;
+      background: #f8fafd; border-radius: 8px;
+      border: 2px dashed #d0ddf0;
+    }
+    .no-motion-msg.hidden { display: none; }
+
+    /* ── WARNING BLOCK ───────────────────────────────────── */
+    .warning-block {
+      display: flex; gap: 10px; align-items: flex-start;
+      background: #fff3cd; border: 1.5px solid #f0c040;
+      border-radius: 8px; padding: 13px 15px;
+      margin: 10px 0; font-size: 0.87rem; color: #7a4d00;
+      line-height: 1.5; font-weight: 600;
+    }
+    .warning-block .wi { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+
+    /* ── PLACEHOLDER SECTION ─────────────────────────────── */
+    .placeholder-section {
+      text-align: center; padding: 20px;
+      background: #f8fafd; border-radius: 8px;
+      border: 1.5px dashed #c8d8f0;
+      font-size: 0.84rem; color: #7a8fac;
+    }
+
+    /* ── ACTIONS ─────────────────────────────────────────── */
+    .actions { display: flex; gap: 10px; margin-top: 28px; flex-wrap: wrap; }
+    button {
+      padding: 10px 20px; border: none; border-radius: 8px;
+      font-size: 0.84rem; font-weight: 600;
+      cursor: pointer; transition: opacity 0.2s, transform 0.1s;
+    }
+    button:hover  { opacity: 0.87; }
+    button:active { transform: scale(0.98); }
+    .btn-reset { background: #e3eaf5; color: #0a2e5c; }
+    .btn-copy  { background: #0a2e5c; color: #fff; }
+    .btn-print { background: #f4f6f8; color: #555; border: 1px solid #d0d8e4; }
+
+    /* ── STATUS BANNER ───────────────────────────────────── */
+    .status-ok {
+      display: none; background: #d4edda; color: #155724;
+      border-radius: 8px; padding: 12px 16px;
+      font-size: 0.88rem; font-weight: 600;
+      margin-top: 20px; text-align: center;
+    }
+    .status-ok.visible { display: block; }
+
+
+    /* ── OK BLOCK ────────────────────────────────────────── */
+    .ok-block {
+      background: #d4edda; border: 1.5px solid #5cb85c;
+      border-radius: 8px; padding: 10px 14px; margin: 6px 0;
+      font-size: 0.85rem; font-weight: 600; color: #155724;
+    }
+    .ok-block a { color: #155724; font-weight: 700; text-decoration: none; }
+    .ok-block a:hover { text-decoration: underline; }
+
+    .warning-block-danger {
+      background: #fde8e8; border-color: #e05252; color: #c0392b;
+    }
+
+    @media print {
+      body { background: #fff; padding: 0; }
+      .actions, .motion-selector { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <h1>Checklist de Validación de Quotes — Harmony CPQ</h1>
+    <p>Completá todos los controles antes de enviar la quote a aprobación.</p>
+    <div class="progress-wrap">
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progressFill"></div>
+      </div>
+      <p class="progress-label" id="progressLabel">Seleccioná el deal motion para comenzar</p>
+    </div>
+  </header>
+
+  <!-- DEAL MOTION SELECTOR -->
+  <div class="motion-selector">
+    <div class="motion-label">Deal Motion</div>
+    <div class="motion-buttons">
+      <button class="motion-btn" onclick="selectMotion('nb', this)">New Business</button>
+      <button class="motion-btn" onclick="selectMotion('addon', this)">Add On</button>
+    </div>
+  </div>
+
+  <div class="body-card">
+
+    <!-- ── INFO BOXES ──────────────────────────────────── -->
+    <div class="info-box info-box-link">
+      📖 Para más información sobre políticas, uso de sistemas, links y trainings, accedé al
+      <a href="https://sap.sharepoint.com/teams/NAGlobalCommercialFinance/Shared%20Documents/Forms/AllItems.aspx?id=%2Fteams%2FNAGlobalCommercialFinance%2FShared%20Documents%2FBest%20Practices%2FAE%5FInfo%5FSAP%5Fv2%2Epdf&parent=%2Fteams%2FNAGlobalCommercialFinance%2FShared%20Documents%2FBest%20Practices" target="_blank">AE Information Guide</a>
+    </div>
+    <div class="info-box info-box-legend">
+      <span class="tag tag-block">Bloqueante</span>
+      <span class="legend-text">= Motivo de rechazo</span>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         CONTROLES GENERALES
+    ═══════════════════════════════════════════ -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Controles Generales</div>
+        <div class="section-rule"></div>
+      </div>
+
+      <!-- 1. Quote Efficiency -->
+      <div class="check-item" onclick="toggle(this)">
+        <input type="checkbox" />
+        <span class="check-label">
+          Cantidad de quotes cumple con el Guidance on Quote Efficiency
+          <span class="tag tag-block">Bloqueante</span>
+        </span>
+      </div>
+      <div class="note note-info">
+        ≤ 1 quote por oportunidad en deals &lt; 200k EUR AACV &nbsp;|&nbsp;
+        ≤ 2 quotes por oportunidad en deals &gt; 200k EUR AACV
+      </div>
+
+      <!-- 2. Price Date -->
+      <div class="check-item" onclick="toggle(this)">
+        <input type="checkbox" />
+        <span class="check-label">
+          Price date en el header está actualizada
+          <span class="tag tag-block">Bloqueante</span>
+        </span>
+      </div>
+      <div class="note note-info">
+        "Actualizada" = posterior a la fecha de la última price list release.
+      </div>
+
+      <!-- 3. Offer Expiration Date -->
+      <div class="check-item" onclick="toggle(this)">
+        <input type="checkbox" />
+        <span class="check-label">
+          Offer Expiration Date seteada en o antes del Start Date
+        </span>
+      </div>
+      <div class="note note-warn">
+        RISE deals: el equipo de Incubation revisa este campo con su propia guidance. Ante dudas, confirma con ellos.
+      </div>
+
+      <!-- 4. Start Date -->
+      <div class="check-item" onclick="toggle(this)">
+        <input type="checkbox" />
+        <span class="check-label">
+          Start date seteado en el Q actual o el siguiente — no más adelante
+          <span class="tag tag-block">Bloqueante</span>
+        </span>
+      </div>
+
+      <!-- 5. Valid Until Date -->
+      <div class="check-item" onclick="toggle(this)">
+        <input type="checkbox" />
+        <span class="check-label">
+          Valid Until Date correcta
+        </span>
+      </div>
+      <div class="note note-warn">
+        ⚠ Esta fecha <strong>no se puede modificar</strong> una vez seteada. Una quote expirada no puede ser booked. Verificar antes de guardar.
+      </div>
+
+      <!-- 6. Entitlement Set (unified) -->
+      <div class="check-item" onclick="toggle(this)">
+        <input type="checkbox" />
+        <span class="check-label">
+          Entitlement Set seleccionado (uno solo por quote)
+          <span class="tag tag-block">Bloqueante</span>
+        </span>
+      </div>
+      <div class="note note-info">
+        "Selection required" no es aceptable. Asegurarse de que haya un solo Entitlement Set para todas las líneas de la BoM. Ante dudas, abrir ticket a Provisioning y adjuntar la confirmación a la quote antes de enviarla.
+      </div>
+
+      <div class="check-item" onclick="toggle(this)">
+        <input type="checkbox" />
+        <span class="check-label">Pricing SSP compliant
+          <span class="tag tag-block">Bloqueante</span>
+        </span>
+      </div>
+
+    </div><!-- /controles generales -->
+
+    <!-- PLACEHOLDER -->
+    <div class="no-motion-msg" id="no-motion-msg">
+      ↑ &nbsp;Seleccioná el deal motion para ver los controles específicos
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         CONDICIONAL: NEW BUSINESS
+    ═══════════════════════════════════════════ -->
+    <div class="cond-section" id="section-nb">
+
+      <!-- T&C -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">T&amp;C — New Business</div>
+          <div class="section-rule"></div>
+        </div>
+
+        <div class="ref-card">
+          <div class="ref-card-header" onclick="toggleRef(this)">
+            📋 Ver valores T&amp;C estándar de referencia
+            <span class="arrow">▼</span>
+          </div>
+          <div class="ref-card-body">
+            <table class="ref-table">
+              <tr><td>Renewal type</td><td>Auto-Renewal</td></tr>
+              <tr>
+                <td>Renewal duration</td>
+                <td>12 / 24 / 36 meses, alineado al Contract Duration.<br>
+                  <em>Deals que excedan 36 meses → renewal term default de 12 meses.</em>
+                </td>
+              </tr>
+              <tr><td>Billing interval</td><td>Yearly in Advance</td></tr>
+              <tr><td>Payment Terms</td><td>30 Days Due net</td></tr>
+              <tr><td>Increase type</td><td>Flat Per Annum 3.3%</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- T&C radio -->
+        <div class="inline-question">
+          <div class="inline-question-label">T&amp;C:</div>
+          <div class="radio-group">
+            <button class="radio-btn" onclick="selectTC('estandar', this)">Estándar</button>
+            <button class="radio-btn" onclick="selectTC('no-estandar', this)">No estándar</button>
+          </div>
+        </div>
+
+        <!-- If No estándar -->
+        <div class="sub-section" id="tc-no-estandar">
+          <div class="check-item" onclick="toggle(this)">
+            <input type="checkbox" />
+            <span class="check-label">
+              Incluir business justification en los comentarios o adjuntar pre-alignment con CFO
+              <span class="tag tag-block">Bloqueante</span>
+            </span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Minimums & Prerequisites -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">Mínimos y Prerequisitos</div>
+          <div class="section-rule"></div>
+        </div>
+
+        <div class="check-item" onclick="toggle(this)">
+          <input type="checkbox" />
+          <span class="check-label">
+            Cantidades mínimas se cumplen
+            <span class="tag tag-block">Bloqueante</span>
+          </span>
+        </div>
+
+        <div class="check-item" onclick="toggle(this)">
+          <input type="checkbox" />
+          <span class="check-label">
+            Prerequisitos se cumplen
+            <span class="tag tag-block">Bloqueante</span>
+          </span>
+        </div>
+
+        <!-- Pregunta 1 -->
+        <div class="inline-question">
+          <div class="inline-question-label">¿Los prerequisitos se cumplen dentro de esta misma quote?</div>
+          <div class="radio-group">
+            <button class="radio-btn" onclick="selectPrereqEnQuote('si', this)">Sí, se cumplen en esta quote</button>
+            <button class="radio-btn" onclick="selectPrereqEnQuote('no', this)">No, se cumplen en otro contrato</button>
+          </div>
+        </div>
+
+        <!-- IF No → Pregunta 2 -->
+        <div class="sub-section" id="prereq-q2-wrap">
+          <div class="inline-question">
+            <div class="inline-question-label">¿Hay alguna limitación técnica o de sistema para estructurar esta quote como Add On de ese contrato?</div>
+            <div class="radio-group">
+              <button class="radio-btn" onclick="selectLimitacion('si', this)">Sí</button>
+              <button class="radio-btn" onclick="selectLimitacion('no', this)">No</button>
+            </div>
+          </div>
+
+          <!-- IF No → Warning -->
+          <div class="sub-section" id="prereq-warning">
+            <div class="warning-block">
+              <span class="wi">⚠</span>
+              <div>Esta quote debe estructurarse como un <strong>Add On</strong> de ese contrato.
+              <strong>NO</strong> como New Business. Cambiá el deal motion y completá los controles de Add On.</div>
+            </div>
+          </div>
+
+          <!-- IF Sí → Compliance checks -->
+          <div class="sub-section" id="prereq-checks">
+            <div class="check-item" onclick="toggle(this)">
+              <input type="checkbox" />
+              <span class="check-label">
+                Quote co-term con el contrato donde está el prereq (misma end date)
+                <span class="tag tag-block">Bloqueante</span>
+              </span>
+            </div>
+            <div class="check-item" onclick="toggle(this)">
+              <input type="checkbox" />
+              <span class="check-label">
+                Mismo renewal type y renewal duration que el contrato donde está el prereq
+                <span class="tag tag-block">Bloqueante</span>
+              </span>
+            </div>
+            <div class="check-item" onclick="toggle(this)">
+              <input type="checkbox" />
+              <span class="check-label">
+                Seleccionar "Other non-standard commercial terms or contractual clauses", incluyendo: justificación para estructurarlo como New Business, PC order del contrato del prereq, start date, end date y nombre del prereq
+                <span class="tag tag-block">Bloqueante</span>
+              </span>
+            </div>
+          </div>
+
+        </div><!-- /prereq-q2-wrap -->
+
+      </div>
+    </div><!-- /section-nb -->
+
+    <!-- ══════════════════════════════════════════
+         CONDICIONAL: ADD ON
+    ═══════════════════════════════════════════ -->
+    <div class="cond-section" id="section-addon">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">Controles Específicos — Add On</div>
+          <div class="section-rule"></div>
+        </div>
+        <!-- Co-term radio -->
+        <div class="inline-question">
+          <div class="inline-question-label">¿Add On co-term con la orden inicial?
+            <span class="tag tag-block">Bloqueante</span>
+          </div>
+          <div class="radio-group">
+            <button class="radio-btn" onclick="selectCoterm('si', this)">Sí</button>
+            <button class="radio-btn" onclick="selectCoterm('no', this)">No</button>
+          </div>
+        </div>
+
+        <!-- IF No coterm → sub-questions -->
+        <div class="sub-section" id="coterm-no-section">
+
+          <div class="inline-question">
+            <div class="inline-question-label">¿Se incluyen productos de la Rise EEI List?</div>
+            <div class="radio-group">
+              <button class="radio-btn" onclick="selectRiseEEI('si', this)">Sí</button>
+              <button class="radio-btn" onclick="selectRiseEEI('no', this)">No</button>
+            </div>
+          </div>
+          <div class="sub-section" id="rise-eei-ok">
+            <div class="ok-block">✅ Ok — excepción aplica por Rise EEI List.</div>
+          </div>
+
+          <div class="inline-question">
+            <div class="inline-question-label">¿Se está haciendo un pulling forward a phase?</div>
+            <div class="radio-group">
+              <button class="radio-btn" onclick="selectPulling('si', this)">Sí</button>
+              <button class="radio-btn" onclick="selectPulling('no', this)">No</button>
+            </div>
+          </div>
+          <div class="sub-section" id="pulling-ok">
+            <div class="ok-block">✅ Ok — Seguí el siguiente guideline: <a href="https://sap.sharepoint.com/sites/126938/SiteAssets/Forms/AllItems.aspx?id=%2Fsites%2F126938%2FSiteAssets%2FSitePages%2FPolicies%2Dand%2DGuidelines%2FGuide%5Fon%5FPulling%5Fthe%5FPhase%5FForward%5FVersion%5F1%2E1%2Epdf&parent=%2Fsites%2F126938%2FSiteAssets%2FSitePages%2FPolicies%2Dand%2DGuidelines" target="_blank">Guide on Pulling phase forward</a></div>
+          </div>
+
+          <div class="sub-section" id="coterm-alert">
+            <div class="warning-block warning-block-danger">
+              <span class="wi">⚠</span>
+              <div>La quote debe ser <strong>co-term</strong> con la orden inicial.</div>
+            </div>
+          </div>
+
+        </div><!-- /coterm-no-section -->
+
+        <div class="note note-warn">
+          ⚠ No se pueden crear Add Ons dentro de los últimos 3 meses del período de suscripción inicial.
+        </div>
+        <div class="note note-warn">
+          ⚠ No se pueden crear Add Ons de órdenes iniciales que todavía no comenzaron.
+        </div>
+
+        <!-- Mínimos y prerrequisitos (fuera del Cross Sell) -->
+        <div class="check-item" onclick="toggle(this)">
+          <input type="checkbox" />
+          <span class="check-label">Se cumplen los mínimos y prerrequisitos
+            <span class="tag tag-block">Bloqueante</span>
+          </span>
+        </div>
+
+        <!-- Cross Sell -->
+        <div class="inline-question">
+          <div class="inline-question-label">¿Se incluye Cross Sell?</div>
+          <div class="radio-group">
+            <button class="radio-btn" onclick="selectCrossSell('no', this)">No</button>
+            <button class="radio-btn" onclick="selectCrossSell('si', this)">Sí</button>
+          </div>
+        </div>
+        <div class="sub-section" id="cross-sell-section">
+          <div class="check-item" onclick="toggle(this)">
+            <input type="checkbox" />
+            <span class="check-label">Cross Sell: Se está incluyendo la versión más nueva del SKU
+              <span class="tag tag-block">Bloqueante</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- T&C -->
+        <div class="check-item" onclick="toggle(this)">
+          <input type="checkbox" />
+          <span class="check-label">T&amp;C coinciden con la orden inicial (Renewal type, Renewal Duration, Billing Interval, Payment Terms, Increase type)
+            <span class="tag tag-block">Bloqueante</span>
+          </span>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- STATUS & ACTIONS -->
+    <div class="status-ok" id="statusOk">
+      ✅ Todos los controles completados — la quote está lista para enviar a aprobación.
+    </div>
+
+    <div class="actions">
+      <button class="btn-reset" onclick="resetAll()">Reiniciar</button>
+      <button class="btn-print" onclick="window.print()">Imprimir / PDF</button>
+      <button class="btn-copy"  onclick="copyStatus()">Copiar resumen</button>
+    </div>
+
+  </div><!-- /body-card -->
+</div><!-- /container -->
+
+<script>
+  let currentMotion   = null;
+  let tcState         = null;
+  let prereqEnQuote   = null;
+  let limitacionState = null;
+  let crossSellState  = null;
+  let cotermState     = null;
+  let riseEEIState    = null;
+  let pullingState    = null;
+
+  function selectMotion(motion, btn) {
+    currentMotion = motion;
+    document.querySelectorAll('.motion-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('no-motion-msg').classList.add('hidden');
+    ['nb','addon'].forEach(m =>
+      document.getElementById('section-' + m).classList.toggle('visible', m === motion)
+    );
+    if (motion !== 'nb') resetNBState();
+    if (motion !== 'addon') resetAddonState();
+    updateProgress();
+  }
+
+  function selectTC(val, btn) {
+    tcState = val;
+    btn.closest('.radio-group').querySelectorAll('.radio-btn')
+      .forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const noEstandar = document.getElementById('tc-no-estandar');
+    noEstandar.classList.toggle('visible', val === 'no-estandar');
+    if (val !== 'no-estandar') {
+      noEstandar.querySelectorAll('.check-item').forEach(uncheckItem);
+    }
+    updateProgress();
+  }
+
+  function selectPrereqEnQuote(val, btn) {
+    prereqEnQuote = val;
+    btn.closest('.radio-group').querySelectorAll('.radio-btn')
+      .forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const q2 = document.getElementById('prereq-q2-wrap');
+    q2.classList.toggle('visible', val === 'no');
+    if (val !== 'no') resetPrereqQ2();
+    updateProgress();
+  }
+
+  function selectLimitacion(val, btn) {
+    limitacionState = val;
+    btn.closest('.radio-group').querySelectorAll('.radio-btn')
+      .forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('prereq-warning').classList.toggle('visible', val === 'no');
+    document.getElementById('prereq-checks').classList.toggle('visible', val === 'si');
+    updateProgress();
+  }
+
+  function selectCoterm(val, btn) {
+    cotermState = val;
+    btn.closest('.radio-group').querySelectorAll('.radio-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const sec = document.getElementById('coterm-no-section');
+    sec.classList.toggle('visible', val === 'no');
+    if (val !== 'no') {
+      ['coterm-no-section','rise-eei-ok','pulling-ok','coterm-alert'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('visible');
+      });
+      riseEEIState = pullingState = null;
+    }
+    updateProgress();
+  }
+
+  function selectRiseEEI(val, btn) {
+    riseEEIState = val;
+    btn.closest('.radio-group').querySelectorAll('.radio-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('rise-eei-ok').classList.toggle('visible', val === 'si');
+    updateCotermAlert();
+    updateProgress();
+  }
+
+  function selectPulling(val, btn) {
+    pullingState = val;
+    btn.closest('.radio-group').querySelectorAll('.radio-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('pulling-ok').classList.toggle('visible', val === 'si');
+    updateCotermAlert();
+    updateProgress();
+  }
+
+  function updateCotermAlert() {
+    const show = riseEEIState === 'no' && pullingState === 'no';
+    document.getElementById('coterm-alert').classList.toggle('visible', show);
+  }
+
+  function selectCrossSell(val, btn) {
+    crossSellState = val;
+    btn.closest('.radio-group').querySelectorAll('.radio-btn')
+      .forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const cs = document.getElementById('cross-sell-section');
+    cs.classList.toggle('visible', val === 'si');
+    if (val !== 'si') cs.querySelectorAll('.check-item').forEach(uncheckItem);
+    updateProgress();
+  }
+
+  function resetAddonState() {
+    crossSellState = cotermState = riseEEIState = pullingState = null;
+    ['cross-sell-section','coterm-no-section','rise-eei-ok','pulling-ok','coterm-alert'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.classList.remove('visible'); el.querySelectorAll('.check-item').forEach(uncheckItem); }
+    });
+    document.querySelectorAll('#section-addon .radio-btn').forEach(b => b.classList.remove('active'));
+  }
+
+  function toggleRef(header) {
+    const body = header.nextElementSibling;
+    const open = body.classList.toggle('open');
+    header.classList.toggle('open', open);
+  }
+
+  function toggle(el) {
+    const cb = el.querySelector('input[type="checkbox"]');
+    cb.checked = !cb.checked;
+    el.classList.toggle('done', cb.checked);
+    updateProgress();
+  }
+
+  function uncheckItem(el) {
+    el.classList.remove('done');
+    el.querySelector('input').checked = false;
+  }
+
+  function isItemVisible(el) {
+    let parent = el.parentElement;
+    while (parent) {
+      if ((parent.classList.contains('sub-section') || parent.classList.contains('cond-section'))
+          && !parent.classList.contains('visible')) {
+        return false;
+      }
+      parent = parent.parentElement;
+    }
+    return true;
+  }
+
+  function updateProgress() {
+    const all = document.querySelectorAll('.check-item');
+    let total = 0, done = 0;
+    all.forEach(el => {
+      if (isItemVisible(el)) {
+        total++;
+        if (el.classList.contains('done')) done++;
+      }
+    });
+    if (total === 0 || !currentMotion) {
+      document.getElementById('progressFill').style.width = '0%';
+      document.getElementById('progressLabel').textContent = 'Seleccioná el deal motion para comenzar';
+      document.getElementById('statusOk').classList.remove('visible');
+      return;
+    }
+    const pct = Math.round((done / total) * 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressLabel').textContent = `${done} de ${total} controles completados`;
+    document.getElementById('statusOk').classList.toggle('visible', done === total && total > 0);
+  }
+
+  function resetPrereqQ2() {
+    limitacionState = null;
+    ['prereq-q2-wrap','prereq-warning','prereq-checks'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.remove('visible');
+      el.querySelectorAll('.check-item').forEach(uncheckItem);
+      el.querySelectorAll('.radio-btn').forEach(b => b.classList.remove('active'));
+    });
+  }
+
+  function resetNBState() {
+    tcState = prereqEnQuote = limitacionState = null;
+    ['tc-no-estandar','prereq-q2-wrap','prereq-warning','prereq-checks'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.remove('visible');
+      el.querySelectorAll('.check-item').forEach(uncheckItem);
+      el.querySelectorAll('.radio-btn').forEach(b => b.classList.remove('active'));
+    });
+  }
+
+  function resetAll() {
+    document.querySelectorAll('.check-item').forEach(uncheckItem);
+    document.querySelectorAll('.motion-btn').forEach(b => b.classList.remove('active'));
+    ['nb','addon'].forEach(m =>
+      document.getElementById('section-' + m).classList.remove('visible')
+    );
+    document.getElementById('no-motion-msg').classList.remove('hidden');
+    resetNBState();
+    resetAddonState();
+    currentMotion = null;
+    updateProgress();
+  }
+
+  function copyStatus() {
+    if (!currentMotion) { alert('Seleccioná un deal motion primero.'); return; }
+    const motionLabel = { nb: 'New Business', addon: 'Add On' };
+    const lines = [
+      'CHECKLIST DE QUOTE — ' + new Date().toLocaleDateString('es-AR'),
+      'Deal Motion: ' + (motionLabel[currentMotion] || currentMotion),
+      ''
+    ];
+    document.querySelectorAll('.section').forEach(sec => {
+      const title = sec.querySelector('.section-title');
+      if (!title) return;
+      const items = [];
+      sec.querySelectorAll('.check-item').forEach(item => {
+        if (!isItemVisible(item)) return;
+        const done = item.classList.contains('done');
+        const text = Array.from(item.querySelector('.check-label').childNodes)
+          .filter(n => n.nodeType === 3).map(n => n.textContent.trim()).join(' ').trim();
+        items.push((done ? '[✓]' : '[ ]') + ' ' + text);
+      });
+      if (items.length) {
+        lines.push('── ' + title.textContent.trim());
+        items.forEach(i => lines.push(i));
+        lines.push('');
+      }
+    });
+    navigator.clipboard.writeText(lines.join('\n'))
+      .then(() => alert('Resumen copiado al portapapeles.'))
+      .catch(() => alert('No se pudo copiar automáticamente. Usá Ctrl+A y Ctrl+C manualmente.'));
+  }
+
+  updateProgress();
+</script>
+</body>
+</html>
